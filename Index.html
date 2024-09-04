@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/css/chessboard-1.0.0.min.css">
+    <style>
+        body {
+            text-align: center;
+            margin-top: 50px;
+        }
+        #board {
+            width: 400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Play Chess</h1>
+    <div id="board"></div>
+
+    <script src="https://unpkg.com/chessboardjs@1.0.0/js/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script>
+        var board,
+            game = new Chess();
+
+        function onDragStart(source, piece, position, orientation) {
+            // Không cho phép di chuyển khi trò chơi kết thúc
+            if (game.game_over()) return false;
+
+            // Không cho phép người chơi di chuyển quân cờ của đối phương
+            if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                return false;
+            }
+        }
+
+        function onDrop(source, target) {
+            // Thực hiện nước đi
+            var move = game.move({
+                from: source,
+                to: target,
+                promotion: 'q' // Luôn phong cấp thành hậu
+            });
+
+            // Nếu nước đi không hợp lệ, trả lại vị trí cũ
+            if (move === null) return 'snapback';
+
+            updateStatus();
+        }
+
+        function updateStatus() {
+            var status = '';
+
+            var moveColor = 'White';
+            if (game.turn() === 'b') {
+                moveColor = 'Black';
+            }
+
+            // Kiểm tra xem trò chơi có kết thúc không
+            if (game.in_checkmate()) {
+                status = 'Game over, ' + moveColor + ' is in checkmate.';
+            } else if (game.in_draw()) {
+                status = 'Game over, it\'s a draw!';
+            } else {
+                status = moveColor + ' to move';
+
+                if (game.in_check()) {
+                    status += ', ' + moveColor + ' is in check';
+                }
+            }
+
+            console.log(status);
+        }
+
+        // Khởi tạo bảng cờ
+        board = Chessboard('board', {
+            draggable: true,
+            position: 'start',
+            onDragStart: onDragStart,
+            onDrop: onDrop
+        });
+
+        // Cập nhật trạng thái ban đầu
+        updateStatus();
+    </script>
+</body>
+</html>
